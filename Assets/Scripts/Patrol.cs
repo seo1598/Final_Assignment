@@ -15,10 +15,10 @@ public class Patrol : MonoBehaviour
     public float fieldOfViewAngle = 45.0f;
     public TextMeshPro statusText;
     public float alertDuration = 10.0f;
+    public GameObject gameOverCanvas; // 게임오버 캔버스 참조
 
     private int currentPointIndex;
     private NavMeshAgent agent;
-    private bool isChasingPlayer;
     private float timeSinceLastSeenPlayer;
     private bool isAlerted;
     private Vector3 alertPosition;
@@ -38,45 +38,57 @@ public class Patrol : MonoBehaviour
     {
         if (isAlerted)
         {
-            if (agent.remainingDistance < 0.5f && !agent.pathPending)
-            {
-                StartCoroutine(AlertWait());
-                isAlerted = false;
-            }
-            return;
+            AlertedBehavior();
         }
+        else
+        {
+            PatrolBehavior();
+        }
+    }
 
+    void PatrolBehavior()
+    {
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         Vector3 directionToPlayer = (player.position - transform.position).normalized;
         float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
 
-        if (distanceToPlayer <= chaseDistance && angleToPlayer <= fieldOfViewAngle / 2 && !player.GetComponent<PlayerController>().IsInSafeZone())
+        if (distanceToPlayer <= chaseDistance && angleToPlayer <= fieldOfViewAngle / 2)
         {
             if (CanSeePlayer())
             {
-                isChasingPlayer = true;
-                timeSinceLastSeenPlayer = 0f;
                 agent.SetDestination(player.position);
                 UpdateStatusText("Player Spotted", Color.red);
             }
         }
-        else if (isChasingPlayer)
-        {
-            timeSinceLastSeenPlayer += Time.deltaTime;
-
-            if (timeSinceLastSeenPlayer >= losePlayerTime)
-            {
-                isChasingPlayer = false;
-                SetNextDestination();
-                UpdateStatusText("Patrolling", Color.blue);
-            }
-        }
-
-        if (!isChasingPlayer && agent.remainingDistance < 0.5f && !agent.pathPending)
+        else if (agent.remainingDistance < 0.5f && !agent.pathPending)
         {
             currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
             SetNextDestination();
             UpdateStatusText("Patrolling", Color.blue);
+        }
+    }
+
+    void AlertedBehavior()
+    {
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        Vector3 directionToPlayer = (player.position - transform.position).normalized;
+        float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
+
+        if (distanceToPlayer <= chaseDistance && angleToPlayer <= fieldOfViewAngle / 2)
+        {
+            if (CanSeePlayer())
+            {
+                isAlerted = false; // 경고 상태 해제
+                agent.SetDestination(player.position);
+                UpdateStatusText("Player Spotted", Color.red);
+                return;
+            }
+        }
+
+        if (agent.remainingDistance < 0.5f && !agent.pathPending)
+        {
+            StartCoroutine(AlertWait());
+            isAlerted = false;
         }
     }
 
@@ -141,6 +153,20 @@ public class Patrol : MonoBehaviour
         yield return new WaitForSeconds(alertDuration);
         SetNextDestination();
         UpdateStatusText("Patrolling", Color.blue);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            GameOver();
+        }
+    }
+
+    void GameOver()
+    {
+        Time.timeScale = 0f; // 게임 일시정지
+        gameOverCanvas.SetActive(true); // 게임오버 캔버스 활성화
     }
 }
 

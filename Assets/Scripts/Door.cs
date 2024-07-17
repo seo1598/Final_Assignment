@@ -5,6 +5,7 @@ using UnityEngine;
 public class Door : MonoBehaviour
 {
     public string requiredKeyId; // 필요한 열쇠 ID
+    public GameObject door;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -25,6 +26,7 @@ public class Door : MonoBehaviour
     private void OpenDoor()
     {
         gameObject.SetActive(false); // 문 오브젝트 비활성화
+        door.SetActive(false);
         Debug.Log("Door is opened!");
     }
 }

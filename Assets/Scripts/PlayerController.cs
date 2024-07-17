@@ -7,20 +7,22 @@ using TMPro;
 public class PlayerController : MonoBehaviour
 {
     private HashSet<string> keys = new HashSet<string>();
-    public Image keyUIImage; // 열쇠 UI 이미지
+    public Image bluekeyUIImage; // 파랑 키 UI 이미지
+    public Image redkeyUIImage; // 레드 키 UI 이미지
     public TMP_Text messageText; // 메시지 텍스트
     private bool isInSafeZone = false; // SafeZone 여부를 나타내는 변수
 
     void Start()
     {
-        keyUIImage.enabled = false; // 시작 시 열쇠 UI 숨김
+        bluekeyUIImage.enabled = false; // 시작 시 파랑 키 UI 숨김
+        redkeyUIImage.enabled = false; // 시작 시 레드 키 UI 숨김
         messageText.enabled = false; // 시작 시 메시지 텍스트 숨김
     }
 
     public void AddKey(string keyId)
     {
         keys.Add(keyId);
-        keyUIImage.enabled = true; // 열쇠 UI 표시
+        UpdateKeyUI(keyId);
     }
 
     public bool HasKey(string keyId)
@@ -49,5 +51,17 @@ public class PlayerController : MonoBehaviour
         messageText.enabled = true;
         yield return new WaitForSeconds(2f);
         messageText.enabled = false;
+    }
+
+    private void UpdateKeyUI(string keyId)
+    {
+        if (keyId == "blue")
+        {
+            bluekeyUIImage.enabled = true;
+        }
+        else if (keyId == "red")
+        {
+            redkeyUIImage.enabled = true;
+        }
     }
 }

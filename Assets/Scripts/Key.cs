@@ -6,12 +6,17 @@ public class Key : MonoBehaviour
 {
     public string keyId; // ¿­¼è ID
 
-    private void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            other.GetComponent<PlayerController>().AddKey(keyId);
-            Destroy(gameObject); // ¿­¼è ¿ÀºêÁ§Æ® ÆÄ±«
+            PlayerController playerController = other.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.AddKey(keyId);
+                playerController.ShowMessage(keyId + " key collected!");
+                Destroy(gameObject); // Å° ¿ÀºêÁ§Æ® ÆÄ±«
+            }
         }
     }
 }
